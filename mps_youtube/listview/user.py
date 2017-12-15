@@ -1,3 +1,6 @@
+"""
+    ListItems for channels/users
+"""
 from .base import ListViewItem
 from .. import util as u
 
@@ -5,7 +8,7 @@ class ListUser(ListViewItem):
     """ Describes a user
     """
     # pylint: disable=unused-argument
-    def id(self, length=0):
+    def id(self, length=0): # pylint: disable=C0103
         """ Returns YTID """
         return self.data.get("id").get("channelId")
 

@@ -1,3 +1,6 @@
+"""
+    Represents a LiveStream ListViewItem
+"""
 from .base import ListViewItem
 from .. import util
 
@@ -19,7 +22,7 @@ class ListLiveStream(ListViewItem):
     def description(self, lngt=10):
         """ exposes description """
         return util.uea_pad(lngt, self.data.get("snippet").get("description"))
-       
+
     @staticmethod
     def return_field():
         """ ret """

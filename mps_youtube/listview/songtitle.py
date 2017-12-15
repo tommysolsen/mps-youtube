@@ -1,3 +1,6 @@
+"""
+    Used to list songnames when trying to extract songs from a description
+"""
 from .base import ListViewItem
 from .. import util as u
 
@@ -14,15 +17,15 @@ class ListSongtitle(ListViewItem):
         self._certainty = certainty
         super(ListSongtitle, self).__init__(data)
 
-    def artist(self, l=10):
+    def artist(self, str_len=10):
         """ Get artist """
-        return u.uea_pad(l, self.data[0])
+        return u.uea_pad(str_len, self.data[0])
 
-    def title(self, l=10):
+    def title(self, str_len=10):
         """ Get title """
-        return u.uea_pad(l, self.data[1])
+        return u.uea_pad(str_len, self.data[1])
 
-    def checked(self, l=10):
+    def checked(self, str_len=10):
         """ String from for checked """
         return "  X  " if self._checked else "     "
 
