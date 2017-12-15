@@ -3,13 +3,13 @@
 """
 import re
 import math
+from typing import Set, Callable
 
 from .. import c, g, util, content
 from .base import ListViewItem
 from .user import ListUser
 from .livestream import ListLiveStream
 from .songtitle import ListSongtitle
-
 
 class ListView(content.PaginatedContent):
     """ Content Agnostic Numbered List
@@ -44,8 +44,10 @@ class ListView(content.PaginatedContent):
     columns = None
     page = 0
 
-    def __init__(self, columns, objects, function_call=None):
-        """ """
+    def __init__(self,
+                 columns: Set[str],
+                 objects: Set[ListViewItem],
+                 function_call: Callable[[Set[object]], None] = None):
         self.func = function_call
         self.objects = objects
         self.columns = columns
@@ -60,19 +62,19 @@ class ListView(content.PaginatedContent):
 
         self.object_type = [obj.__class__ for obj in objects][0]
 
-    def numPages(self):
+    def numPages(self) -> int:
         """ Returns # of pages """
         return max(1, math.ceil(len(self.objects) / util.getxy().max_results))
 
-    def getPage(self, page):
+    def getPage(self, page: int):
         self.page = page
         return self.content()
 
-    def _page_slice(self):
+    def _page_slice(self) -> list:
         chgt = util.getxy().max_results
         return slice(self.page * chgt, (self.page+1) * chgt)
 
-    def content(self):
+    def content(self) -> str:
         """ Generates content
 
             ===============
