@@ -1,15 +1,15 @@
 """
-    DOCSTING COMES HERE
+    Describes a PaginatedContent version of the standard ListView
 """
 import re
 import math
+from typing import Set, Callable
 
 from .. import c, g, util, content
 from .base import ListViewItem
 from .user import ListUser
 from .livestream import ListLiveStream
 from .songtitle import ListSongtitle
-
 
 class ListView(content.PaginatedContent):
     """ Content Agnostic Numbered List
@@ -44,8 +44,10 @@ class ListView(content.PaginatedContent):
     columns = None
     page = 0
 
-    def __init__(self, columns, objects, function_call=None):
-        """ """
+    def __init__(self,
+                 columns: Set[str],
+                 objects: Set[ListViewItem],
+                 function_call: Callable[[Set[object]], None] = None):
         self.func = function_call
         self.objects = objects
         self.columns = columns
@@ -60,19 +62,19 @@ class ListView(content.PaginatedContent):
 
         self.object_type = [obj.__class__ for obj in objects][0]
 
-    def numPages(self):
+    def numPages(self) -> int:
         """ Returns # of pages """
-        return max(1, math.ceil(len(self.objects) / self.views_per_page()))
+        return max(1, math.ceil(len(self.objects) / util.getxy().max_results))
 
-    def getPage(self, page):
+    def getPage(self, page: int):
         self.page = page
         return self.content()
 
-    def _page_slice(self):
-        chgt = self.views_per_page()
+    def _page_slice(self) -> list:
+        chgt = util.getxy().max_results
         return slice(self.page * chgt, (self.page+1) * chgt)
 
-    def content(self):
+    def content(self) -> str:
         """ Generates content
 
             ===============
@@ -88,8 +90,14 @@ class ListView(content.PaginatedContent):
 
             TODO: Make it so set columns can set "remaining" ?
         """
-        # Sums all ints, deal with strings later
-        remaining = (util.getxy().width) - sum(1 + (x['size'] if x['size'] and x['size'].__class__ == int else 0) for x in self.columns) - (len(self.columns))
+        # Sum all ints, deal with strings later
+        # Gets max width of screen
+        # Subtracts all known widths(ints)
+        # Subtracts 1 char for each column separator
+        remaining = util.getxy().width \
+                  - sum(map(lambda x: x['size'] if x['size'] and x['size'].__class__ == int else 0,
+                            self.columns) + 1) \
+                  - len(self.columns)
         lengthsize = 0
         if "length" in [x['size'] for x in self.columns]:
             max_l = max((getattr(x, "length")() for x in self.objects))
@@ -109,8 +117,9 @@ class ListView(content.PaginatedContent):
         fmt = ["%{}{}s  ".format(x['sign'], x['size']) for x in self.columns]
         fmtrow = fmt[0:1] + ["%s  "] + fmt[2:]
         fmt, fmtrow = "".join(fmt).strip(), "".join(fmtrow).strip()
-        titles = tuple([x['heading'][:x['size']] for x in self.columns])
-        out = "\n" + (c.ul + fmt % titles + c.w) + "\n"
+        out = "\n" \
+            + (c.ul + fmt % tuple([x['heading'][:x['size']] for x in self.columns]) + c.w) \
+            + "\n"
 
         for num, obj in enumerate(self.objects[self._page_slice()]):
             col = (c.r if num % 2 == 0 else c.p)
@@ -119,7 +128,7 @@ class ListView(content.PaginatedContent):
             for column in self.columns:
                 fieldsize, field = column['size'], column['name']
                 if field == "idx":
-                    data.append("%2d" % (num + (self.views_per_page() * self.page) + 1))
+                    data.append("%2d" % (num + (util.getxy().max_results * self.page) + 1))
                 else:
                     field = getattr(obj, field)(fieldsize)
                     field = str(field) if field.__class__ != str else field
@@ -130,7 +139,7 @@ class ListView(content.PaginatedContent):
                     data.append(field)
             line = col + (fmtrow % tuple(data)) + c.w
             out += line + "\n"
-        
+
         return out
 
     def _play(self, _, choice, __):  # pre, choice, post
@@ -150,8 +159,3 @@ class ListView(content.PaginatedContent):
 
         var = getattr(self.object_type, "return_field")()
         self.func([getattr(self.objects[x], var)() for x in uids])
-
-    def views_per_page(self):
-        """ Determines how many views can be per page
-        """
-        return util.getxy().max_results
