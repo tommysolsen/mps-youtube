@@ -330,6 +330,7 @@ def stream_details(song, failcount=0, override=False, softrepeat=False):
         elif "pafy" in str(e):
             g.message = str(e) + " - " + song.ytid
             return
+        raise ValueError(song.title + " is not available")
 
     except ValueError:
         g.message = util.F('track unresolved')
@@ -340,7 +341,11 @@ def stream_details(song, failcount=0, override=False, softrepeat=False):
         video = ((config.SHOW_VIDEO.get and override != "audio") or
                  (override in ("fullscreen", "window", "forcevid")))
         m4a = "mplayer" not in config.PLAYER.get
-        cached = g.streams[song.ytid]
+        cached = None
+        try:
+            cached = g.streams[song.ytid]
+        except:
+            cached = False 
         stream = streams.select(cached, q=failcount, audio=(not video), m4a_ok=m4a)
 
         # handle no audio stream available, or m4a with mplayer
