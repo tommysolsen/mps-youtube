@@ -132,15 +132,13 @@ def main():
     arg_inp = " ".join(g.argument_commands)
 
     prompt = "> "
-    arg_inp = arg_inp.replace(r",,", "[mpsyt-comma]")
-    arg_inp = arg_inp.split(",")
+    arg_inp = arg_inp.split(";")
 
     while True:
         next_inp = ""
 
         if len(arg_inp):
             next_inp = arg_inp.pop(0).strip()
-            next_inp = next_inp.replace("[mpsyt-comma]", ",")
 
         try:
             userinput = next_inp or input(prompt).strip()
