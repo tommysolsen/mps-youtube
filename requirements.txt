@@ -1,0 +1,5 @@
+pafy
+youtube-dl
+colorama
+pylast
+spotipy
