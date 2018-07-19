@@ -47,7 +47,10 @@ except ImportError:
 
 mswin = os.name == "nt"
 
-locale.setlocale(locale.LC_ALL, "")  # for date formatting
+try:
+    locale.setlocale(locale.LC_ALL, "")  # for date formatting
+except locale.Error:
+    pass # continue using built in C locale
 
 
 def matchfunction(func, regex, userinput):
